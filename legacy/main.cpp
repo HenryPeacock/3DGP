@@ -61,6 +61,15 @@ int main(int argc, char *argv[])
 
   
   bool quit = false;
+  // Initialising the movement bools
+  bool left = false;
+  bool right = false;
+  bool up = false;
+  bool down = false;
+  // Camera variables
+  glm::vec3 camPosition = glm::vec3(0.0f, 0.0f, 0.0f);
+  glm::vec3 camRotation = glm::vec3(0.0f, 0.0f, 0.0f);
+
 
   float angle = 0;
 
@@ -74,7 +83,80 @@ int main(int argc, char *argv[])
       {
         quit = true;
       }
+	  else if(event.type == SDL_KEYDOWN)
+	  {
+		  //Take user input for movement 
+		  switch (event.key.keysym.sym)
+		  {
+		  case SDLK_LEFT:
+			  left = true;
+			  break;
+		  case SDLK_RIGHT:
+			  right = true;
+			  break;
+		  case SDLK_UP:
+			  up = true;
+			  break;
+		  case SDLK_DOWN:
+			  down = true;
+			  break;
+		  default:
+			  break;
+		  }
+	  }
+	  else if (event.type == SDL_KEYUP)
+	  {
+		  //Reset the movements on key release to stop them 
+		  switch (event.key.keysym.sym)
+		  {
+		  case SDLK_LEFT:
+			  left = false;
+			  break;
+		  case SDLK_RIGHT:
+			  right = false;
+			  break;
+		  case SDLK_UP:
+			  up = false;
+			  break;
+		  case SDLK_DOWN:
+			  down = false;
+			  break;
+		  default:
+			  break;
+		  }
+	  }
     }
+	
+	if (left == true)
+	{
+		camPosition.x += 1;
+	}
+	if (right == true)
+	{
+		camPosition.x -= 1;
+	}
+	if (up == true)
+	{
+		camPosition.z += 1;
+	}
+	if (down == true)
+	{
+		camPosition.z -= 1;
+	}
+
+	// Create arbitary matrix
+	glm::mat4 t(1.0f);
+	// Rotate it by angle (Camera's Y rotation)
+	t = glm::rotate(t, glm::radians(angle), glm::vec3(0, 1, 0));
+	// Move forward 1 unit
+	t = glm::translate(t, glm::vec3(0, 0, 1));
+	// Apply to an initial position
+	glm::vec3 fwd = t * glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+	// Normalize to get the unit vector
+	fwd = glm::normalize(fwd);
+	// Add it to camera position
+	camPosition += fwd;
+
 
 	glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -101,6 +183,7 @@ int main(int argc, char *argv[])
 	shaderProgram->setUniform("in_Texture", 1);
     shaderProgram->setUniform("in_Projection", glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f));
 
+	// Camera movement
     glm::mat4 model(1.0f);
 	model = glm::translate(model, glm::vec3(0, 0, -2.5f));
 	model = glm::rotate(model, glm::radians(angle), glm::vec3(0, 1, 0));
