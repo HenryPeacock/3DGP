@@ -67,11 +67,12 @@ int main(int argc, char *argv[])
   bool up = false;
   bool down = false;
   // Camera variables
-  glm::vec3 camPosition = glm::vec3(0.0f, 0.0f, 0.0f);
+  glm::vec3 camPosition = glm::vec3(0.0f, 0.0f, 1.0f);
   glm::vec3 camRotation = glm::vec3(0.0f, 0.0f, 0.0f);
 
 
   float angle = 0;
+  float camAngle = 0;
 
   while(!quit)
   {
@@ -147,15 +148,22 @@ int main(int argc, char *argv[])
 	// Create arbitary matrix
 	glm::mat4 t(1.0f);
 	// Rotate it by angle (Camera's Y rotation)
-	t = glm::rotate(t, glm::radians(angle), glm::vec3(0, 1, 0));
+	t = glm::rotate(t, glm::radians(camAngle), glm::vec3(0, 1, 0));
 	// Move forward 1 unit
 	t = glm::translate(t, glm::vec3(0, 0, 1));
 	// Apply to an initial position
-	glm::vec3 fwd = t * glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+	glm::vec3 fwd = t * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 	// Normalize to get the unit vector
 	fwd = glm::normalize(fwd);
 	// Add it to camera position
 	camPosition += fwd;
+
+	// Camera movement
+    glm::mat4 model(1.0f);
+	model = glm::translate(model, camPosition);
+	model = glm::rotate(model, glm::radians(camAngle), glm::vec3(0, 1, 0));
+	shaderProgram->setUniform("in_Model", model);
+	shaderProgram->setUniform("in_View", glm::inverse(model));
 
 
 	glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
@@ -181,20 +189,20 @@ int main(int argc, char *argv[])
 
     // Draw with perspective projection matrix
 	shaderProgram->setUniform("in_Texture", 1);
-    shaderProgram->setUniform("in_Projection", glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f));
-
-	// Camera movement
-    glm::mat4 model(1.0f);
+	shaderProgram->setUniform("in_Projection", glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f));
+	
+	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0, 0, -2.5f));
 	model = glm::rotate(model, glm::radians(angle), glm::vec3(0, 1, 0));
 
 	shaderProgram->setUniform("in_Model", model);
 	shaderProgram->draw(shape);
-
+	
+	
 	angle += 100.0f;
 
 	//Draw with orthographic projection matrix
-	model = glm::mat4(1.0f);
+	/*model = glm::mat4(1.0f);
 
 	shaderProgram->setUniform("in_Projection", glm::ortho(0.0f, (float)WINDOW_WIDTH, 0.0f, (float)WINDOW_HEIGHT, 0.0f, 1.0f));
 
@@ -202,7 +210,7 @@ int main(int argc, char *argv[])
 	model = glm::scale(model, glm::vec3(100, 100, 1));
 
 	shaderProgram->setUniform("in_Model", model);
-	shaderProgram->draw(shape);
+	shaderProgram->draw(shape);*/
 
 
 	SDL_GL_SwapWindow(window);
