@@ -33,7 +33,8 @@ int main(int argc, char *argv[])
   {
 	  throw std::exception();
   }
-  //uniform mat4 in_Projection;
+  
+  VertexArray *shape = new VertexArray("../legacy/curuthers.obj");
 
   //Da buff stuff
   VertexBuffer *positions = new VertexBuffer();
@@ -51,7 +52,7 @@ int main(int argc, char *argv[])
   texCoords->add(glm::vec2(0.0f, 1.0f));
   texCoords->add(glm::vec2(1.0f, 1.0f));
 
-  VertexArray *shape = new VertexArray();
+  //VertexArray *shape = new VertexArray();
   shape->setBuffer("in_Position", positions);
   //shape->SetBuffer("in_Color", colors);
   shape->setBuffer("in_TexCoord", texCoords);
@@ -150,7 +151,7 @@ int main(int argc, char *argv[])
 	// Rotate it by angle (Camera's Y rotation)
 	t = glm::rotate(t, glm::radians(camAngle), glm::vec3(0, 1, 0));
 	// Move forward 1 unit
-	t = glm::translate(t, glm::vec3(0, 0, 1));
+	t = glm::translate(t, glm::vec3(0, 0, 0));
 	// Apply to an initial position
 	glm::vec3 fwd = t * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 	// Normalize to get the unit vector
@@ -175,6 +176,14 @@ int main(int argc, char *argv[])
 
 
 	shaderProgram->draw(shape);
+
+	// Draw the cat
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0, 0, -2.5f));
+	model = glm::rotate(model, glm::radians(angle), glm::vec3(0, 1, 0));
+	shaderProgram->setUniform("in_Model", model);
+	shaderProgram->setUniform("in_Texture", texture);
+	shaderProgram->draw(shape);
 	//Draw the Triangle
 	//InstructOpenGL to use our shader prgram and our VAO
 	/*glUseProgram(programId);
@@ -187,7 +196,8 @@ int main(int argc, char *argv[])
 	glBindVertexArray(0);
 	glUseProgram(0);*/
 
-    // Draw with perspective projection matrix
+	/*
+    // Draw with perspective projection matrix (Final triangle)
 	shaderProgram->setUniform("in_Texture", 1);
 	shaderProgram->setUniform("in_Projection", glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f));
 	
@@ -200,6 +210,7 @@ int main(int argc, char *argv[])
 	
 	
 	angle += 100.0f;
+	*/
 
 	//Draw with orthographic projection matrix
 	/*model = glm::mat4(1.0f);

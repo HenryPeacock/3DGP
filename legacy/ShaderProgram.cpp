@@ -237,6 +237,38 @@ void ShaderProgram::setUniform(std::string uniform, int value)
 	glUseProgram(0);
 }
 
+void ShaderProgram::setUniform(std::string uniform, Texture *texture)
+{
+	GLint uniformId = glGetUniformLocation(id, uniform.c_str());
+
+	if (uniformId == -1)
+	{
+		throw std::exception();
+	}
+
+	for (size_t i = 0; i < samplers.size(); i++)
+	{
+		if (samplers.at(i).id == uniformId)
+		{
+			samplers.at(i).texture = texture;
+
+			glUseProgram(id);
+			glUniform1i(uniformId, i);
+			glUseProgram(0);
+			return;
+		}
+	}
+
+	Sampler s;
+	s.id = uniformId;
+	s.texture = texture;
+	samplers.push_back(s);
+
+	glUseProgram(id);
+	glUniform1i(uniformId, samplers.size() - 1);
+	glUseProgram(0);
+}
+
 GLuint ShaderProgram::getId()
 {
 	return id;
