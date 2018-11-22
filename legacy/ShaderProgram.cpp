@@ -1,5 +1,8 @@
 #include "ShaderProgram.h"
 #include "VertexArray.h"
+#include "Texture.h"
+#include <iostream>
+#include <glm/ext.hpp>
 
 ShaderProgram::ShaderProgram()
 {

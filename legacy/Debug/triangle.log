@@ -1,4 +1,6 @@
-﻿  main.cpp
+﻿  ShaderProgram.cpp
+  main.cpp
+  Generating Code...
   triangle.vcxproj -> H:\Desktop\Y2S1\3DGP\legacy\Debug\triangle.exe
   ..\contrib\msvc-windows-x86\SDL2\bin\SDL2.dll
           1 file(s) copied.

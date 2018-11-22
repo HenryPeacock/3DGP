@@ -11,8 +11,8 @@
 #include "stb_image.h"
 #include "Texture.h"
 
-#define WINDOW_WIDTH 640
-#define WINDOW_HEIGHT 480
+int windowWidth = 800;
+int windowHeight = 600;
 
 int main(int argc, char *argv[])
 {
@@ -23,7 +23,8 @@ int main(int argc, char *argv[])
 
   SDL_Window *window = SDL_CreateWindow("Triangle",
     SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-    WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
+    windowWidth, windowHeight, 
+	SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
 
   if (!SDL_GL_CreateContext(window))
   {
@@ -33,31 +34,34 @@ int main(int argc, char *argv[])
   {
 	  throw std::exception();
   }
-  
-  VertexArray *shape = new VertexArray("../legacy/curuthers.obj");
+
+  VertexArray *hallShape = new VertexArray("../re_hall_baked.obj");
+  Texture *hallTexture = new Texture("../re_hall_diffuse.png");
+  VertexArray *shape = new VertexArray("../curuthers.obj");
+  Texture *texture = new Texture("../curuthers_diffuse.png");
 
   //Da buff stuff
-  VertexBuffer *positions = new VertexBuffer();
-  positions->add(glm::vec3(-0.5f, 0.5f, 0.0f));
-  positions->add(glm::vec3(-0.5f, -0.5f, 0.0f));
-  positions->add(glm::vec3(0.5f, -0.5f, 0.0f));
+  //VertexBuffer *positions = new VertexBuffer();
+  //positions->add(glm::vec3(-0.5f, 0.5f, 0.0f));
+  //positions->add(glm::vec3(-0.5f, -0.5f, 0.0f));
+  //positions->add(glm::vec3(0.5f, -0.5f, 0.0f));
 
   /*VertexBuffer *colors = new VertexBuffer();
   colors->add(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
   colors->add(glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
   colors->add(glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));*/
 
-  VertexBuffer *texCoords = new VertexBuffer();
-  texCoords->add(glm::vec2(0.5f, 0.0f));
-  texCoords->add(glm::vec2(0.0f, 1.0f));
-  texCoords->add(glm::vec2(1.0f, 1.0f));
+  //VertexBuffer *texCoords = new VertexBuffer();
+  //texCoords->add(glm::vec2(0.5f, 0.0f));
+  //texCoords->add(glm::vec2(0.0f, 1.0f));
+  //texCoords->add(glm::vec2(1.0f, 1.0f));
 
   //VertexArray *shape = new VertexArray();
-  shape->setBuffer("in_Position", positions);
+  //shape->setBuffer("in_Position", positions);
   //shape->SetBuffer("in_Color", colors);
-  shape->setBuffer("in_TexCoord", texCoords);
+  //shape->setBuffer("in_TexCoord", texCoords);
 
-  Texture *texture = new Texture("image.jpg");
+  //Texture *texture = new Texture("image.jpg");
   ShaderProgram *shaderProgram = new ShaderProgram("../shaders/vert.txt", "../shaders/frag.txt");
 
   
@@ -74,6 +78,9 @@ int main(int argc, char *argv[])
 
   float angle = 0;
   float camAngle = 0;
+
+  glEnable(GL_CULL_FACE);
+  glEnable(GL_DEPTH_TEST);
 
   while(!quit)
   {
@@ -146,7 +153,7 @@ int main(int argc, char *argv[])
 		camPosition.z -= 1;
 	}
 
-	// Create arbitary matrix
+	/*// Create arbitary matrix
 	glm::mat4 t(1.0f);
 	// Rotate it by angle (Camera's Y rotation)
 	t = glm::rotate(t, glm::radians(camAngle), glm::vec3(0, 1, 0));
@@ -164,22 +171,43 @@ int main(int argc, char *argv[])
 	model = glm::translate(model, camPosition);
 	model = glm::rotate(model, glm::radians(camAngle), glm::vec3(0, 1, 0));
 	shaderProgram->setUniform("in_Model", model);
-	shaderProgram->setUniform("in_View", glm::inverse(model));
+	shaderProgram->setUniform("in_View", glm::inverse(model));*/
 
 
-	glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
+	//glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+	//glClear(GL_COLOR_BUFFER_BIT);
 
 	// Calling texture
-	glActiveTexture(GL_TEXTURE0 + 1);
-	glBindTexture(GL_TEXTURE_2D, texture->getId());
+	//glActiveTexture(GL_TEXTURE0 + 1);
+	//glBindTexture(GL_TEXTURE_2D, texture->getId());
 
 
-	shaderProgram->draw(shape);
+	//shaderProgram->draw(shape);
+
+	SDL_GetWindowSize(window, &windowWidth, &windowHeight);
+	glViewport(0, 0, windowWidth, windowHeight);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	// Draw with perspective projection matrix
+	shaderProgram->setUniform("in_Projection", glm::perspective(glm::radians(45.0f), (float)windowWidth / (float)windowHeight, 0.1f, 100.f));
+
+	// Create a "camera"
+	glm::mat4 model(1.0f);
+	model = glm::rotate(model, glm::radians(angle), glm::vec3(0, 1, 0));
+	shaderProgram->setUniform("in_View", glm::inverse(model));
+
+	// Draw the mansion
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(2.0f, -2.0f, -16.0f));
+	model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0, 1, 0));
+	shaderProgram->setUniform("in_Model", model);
+	shaderProgram->setUniform("in_Texture", hallTexture);
+	shaderProgram->draw(hallShape);
 
 	// Draw the cat
 	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0, 0, -2.5f));
+	model = glm::translate(model, glm::vec3(0, -2.1f, -20.0f));
 	model = glm::rotate(model, glm::radians(angle), glm::vec3(0, 1, 0));
 	shaderProgram->setUniform("in_Model", model);
 	shaderProgram->setUniform("in_Texture", texture);
@@ -223,6 +251,7 @@ int main(int argc, char *argv[])
 	shaderProgram->setUniform("in_Model", model);
 	shaderProgram->draw(shape);*/
 
+	angle += 0.01f;
 
 	SDL_GL_SwapWindow(window);
   }
